@@ -1,74 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Simple Cloud Chat</title>
-<style>
-  body { font-family: Arial; margin: 20px; }
-  #messages { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; background: #f0f0f0; margin-bottom: 10px; }
-  #messages li { margin: 5px; padding: 5px; background: #fff; border-radius: 5px; }
-</style>
+    <title>Cloud Variables Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { margin: 5px; padding: 5px; }
+    </style>
 </head>
 <body>
 
-<h2>Simple Chat</h2>
+<h2>Cloud Variables (Replit)</h2>
 
-<ul id="messages"></ul>
+<!-- SET VARIABLE -->
+<h3>Set Variable</h3>
+<input type="text" id="key" placeholder="Key">
+<input type="text" id="value" placeholder="Value">
+<button onclick="setVariable()">Set</button>
 
-<input type="text" id="username" placeholder="Your username">
-<br>
-<input type="text" id="message" placeholder="Write a message">
-<button onclick="sendMessage()">Send</button>
+<!-- GET VARIABLE -->
+<h3>Get Variable</h3>
+<input type="text" id="get-key" placeholder="Key to Get">
+<button onclick="getVariable()">Get</button>
+
+<!-- OUTPUT -->
+<h3>Output</h3>
+<pre id="output"></pre>
 
 <script>
-const SERVER_URL = "https://chat.francesco-davi1.repl.co"; // 🔧 Cambia esto si es necesario
+const SERVER_URL = "https://chat.francesco-davi1.repl.co";  // Cambia por la URL real de tu Replit
 
-async function fetchMessages() {
-  const res = await fetch(`${SERVER_URL}/get/chat`);
-  const data = await res.json();
-  const chat = data.chat || "";
-  displayMessages(chat);
+function setVariable() {
+    const key = document.getElementById("key").value;
+    const value = document.getElementById("value").value;
+    fetch(`${SERVER_URL}/set/${encodeURIComponent(key)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: value })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+    });
 }
 
-function displayMessages(chatString) {
-  const messagesList = document.getElementById('messages');
-  messagesList.innerHTML = "";
-  const lines = chatString.split('\n');
-  lines.forEach(msg => {
-    if (msg.trim() === "") return;
-    const li = document.createElement('li');
-    li.innerText = msg;
-    messagesList.appendChild(li);
-  });
+function getVariable() {
+    const key = document.getElementById("get-key").value;
+    fetch(`${SERVER_URL}/get/${encodeURIComponent(key)}`)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+    });
 }
-
-async function sendMessage() {
-  const username = document.getElementById('username').value.trim();
-  const message = document.getElementById('message').value.trim();
-  if (!username || !message) return;
-
-  // Primero traemos el chat actual
-  const res = await fetch(`${SERVER_URL}/get/chat`);
-  const data = await res.json();
-  let chat = data.chat || "";
-
-  // Agregamos el nuevo mensaje
-  chat += `${username}: ${message}\n`;
-
-  // Enviamos el chat actualizado
-  await fetch(`${SERVER_URL}/set/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: chat })
-  });
-
-  document.getElementById('message').value = '';
-  fetchMessages();
-}
-
-// Refrescar mensajes cada 2 segundos
-setInterval(fetchMessages, 2000);
-fetchMessages();
 </script>
 
 </body>
