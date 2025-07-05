@@ -1,70 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PeerJS Chat</title>
+    <title>Username-based P2P Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        #messages { list-style: none; padding: 0; }
+        #messages li { margin: 5px 0; background: #eee; padding: 5px; border-radius: 5px; }
+    </style>
 </head>
 <body>
 
-<h2>Peer-to-Peer Chat</h2>
+<h2>P2P Chat with Usernames</h2>
 
-<p>Your ID: <span id="my-id"></span></p>
+<div>
+    <input type="text" id="my-username" placeholder="Your username">
+    <button onclick="registerUsername()">Register</button>
+</div>
 
-<input type="text" id="connect-id" placeholder="Enter peer ID to connect">
-<button onclick="connectToPeer()">Connect</button>
+<div>
+    <input type="text" id="target-username" placeholder="Username to connect">
+    <button onclick="connectByUsername()">Connect</button>
+</div>
 
 <ul id="messages"></ul>
 
-<input type="text" id="message" placeholder="Type your message...">
+<input type="text" id="message" placeholder="Type message...">
 <button onclick="sendMessage()">Send</button>
 
 <script>
-    // Crear Peer (se conecta a peerjs.com por defecto)
+    // 🔧 Configura tu Firebase aquí:
+    const firebaseConfig = {
+        apiKey: "TU_API_KEY",
+        authDomain: "TU_PROYECTO.firebaseapp.com",
+        databaseURL: "https://TU_PROYECTO.firebaseio.com",
+        projectId: "TU_PROYECTO",
+        storageBucket: "TU_PROYECTO.appspot.com",
+        messagingSenderId: "XXXXXX",
+        appId: "1:XXXXXX:web:XXXXXX"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("usernames");
+
+    // Crear peer
     const peer = new Peer();
-
-    // Mostrar tu propio ID
-    peer.on('open', function(id) {
-        document.getElementById('my-id').innerText = id;
-        console.log('My peer ID is: ' + id);
-    });
-
     let conn;
 
-    // Cuando alguien se conecta a ti
+    peer.on('open', function(id) {
+        console.log('My peer ID is: ' + id);
+        window.peerId = id; // Guardamos el ID globalmente
+    });
+
     peer.on('connection', function(connection) {
         conn = connection;
         setupConnection();
     });
 
-    function connectToPeer() {
-        const peerId = document.getElementById('connect-id').value;
-        conn = peer.connect(peerId);
-        setupConnection();
+    function registerUsername() {
+        const username = document.getElementById("my-username").value.trim();
+        if (!username) return alert("Please enter a username.");
+        db.child(username).set(window.peerId)
+            .then(() => alert("Username registered!"))
+            .catch((e) => alert("Error registering username: " + e));
+    }
+
+    function connectByUsername() {
+        const target = document.getElementById("target-username").value.trim();
+        if (!target) return alert("Enter a username to connect to.");
+
+        db.child(target).once("value").then(snapshot => {
+            const targetId = snapshot.val();
+            if (!targetId) return alert("Username not found.");
+            conn = peer.connect(targetId);
+            setupConnection();
+        }).catch(e => alert("Error fetching username: " + e));
     }
 
     function setupConnection() {
-        conn.on('open', function() {
-            console.log('Connection opened');
-        });
-
-        conn.on('data', function(data) {
-            addMessage('Peer: ' + data);
-        });
+        conn.on('open', () => console.log('Connected!'));
+        conn.on('data', data => addMessage('Peer: ' + data));
     }
 
     function sendMessage() {
-        const msg = document.getElementById('message').value;
+        const msg = document.getElementById("message").value;
         if (msg && conn && conn.open) {
             conn.send(msg);
             addMessage('You: ' + msg);
-            document.getElementById('message').value = '';
+            document.getElementById("message").value = "";
         }
     }
 
     function addMessage(msg) {
         const li = document.createElement('li');
         li.innerText = msg;
-        document.getElementById('messages').appendChild(li);
+        document.getElementById("messages").appendChild(li);
     }
 </script>
 
