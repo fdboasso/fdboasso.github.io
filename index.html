@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PeerJS Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+<h2>Peer-to-Peer Chat</h2>
+
+<p>Your ID: <span id="my-id"></span></p>
+
+<input type="text" id="connect-id" placeholder="Enter peer ID to connect">
+<button onclick="connectToPeer()">Connect</button>
+
+<ul id="messages"></ul>
+
+<input type="text" id="message" placeholder="Type your message...">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    // Crear Peer (se conecta a peerjs.com por defecto)
+    const peer = new Peer();
+
+    // Mostrar tu propio ID
+    peer.on('open', function(id) {
+        document.getElementById('my-id').innerText = id;
+        console.log('My peer ID is: ' + id);
+    });
+
+    let conn;
+
+    // Cuando alguien se conecta a ti
+    peer.on('connection', function(connection) {
+        conn = connection;
+        setupConnection();
+    });
+
+    function connectToPeer() {
+        const peerId = document.getElementById('connect-id').value;
+        conn = peer.connect(peerId);
+        setupConnection();
+    }
+
+    function setupConnection() {
+        conn.on('open', function() {
+            console.log('Connection opened');
+        });
+
+        conn.on('data', function(data) {
+            addMessage('Peer: ' + data);
+        });
+    }
+
+    function sendMessage() {
+        const msg = document.getElementById('message').value;
+        if (msg && conn && conn.open) {
+            conn.send(msg);
+            addMessage('You: ' + msg);
+            document.getElementById('message').value = '';
+        }
+    }
+
+    function addMessage(msg) {
+        const li = document.createElement('li');
+        li.innerText = msg;
+        document.getElementById('messages').appendChild(li);
+    }
+</script>
+
+</body>
+</html>
