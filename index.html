@@ -1,31 +1,75 @@
 <!DOCTYPE html>
-<html>
-<head><title>Local BroadcastChannel Chat</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Cloud Chat</title>
+<style>
+  body { font-family: Arial; margin: 20px; }
+  #messages { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; background: #f0f0f0; margin-bottom: 10px; }
+  #messages li { margin: 5px; padding: 5px; background: #fff; border-radius: 5px; }
+</style>
+</head>
 <body>
-<h2>Chat en la misma máquina (múltiples pestañas)</h2>
+
+<h2>Simple Chat</h2>
+
 <ul id="messages"></ul>
-<input id="msg" placeholder="Escribe algo"/>
-<button onclick="send()">Enviar</button>
+
+<input type="text" id="username" placeholder="Your username">
+<br>
+<input type="text" id="message" placeholder="Write a message">
+<button onclick="sendMessage()">Send</button>
 
 <script>
-const channel = new BroadcastChannel('chat_channel');
-const messages = document.getElementById('messages');
+const SERVER_URL = "https://chat.francesco-davi1.repl.co"; // 🔧 Cambia esto si es necesario
 
-channel.onmessage = e => {
-  const li = document.createElement('li');
-  li.textContent = 'Peer: ' + e.data;
-  messages.appendChild(li);
-};
-
-function send() {
-  const input = document.getElementById('msg');
-  if(input.value.trim() === '') return;
-  channel.postMessage(input.value);
-  const li = document.createElement('li');
-  li.textContent = 'You: ' + input.value;
-  messages.appendChild(li);
-  input.value = '';
+async function fetchMessages() {
+  const res = await fetch(`${SERVER_URL}/get/chat`);
+  const data = await res.json();
+  const chat = data.chat || "";
+  displayMessages(chat);
 }
+
+function displayMessages(chatString) {
+  const messagesList = document.getElementById('messages');
+  messagesList.innerHTML = "";
+  const lines = chatString.split('\n');
+  lines.forEach(msg => {
+    if (msg.trim() === "") return;
+    const li = document.createElement('li');
+    li.innerText = msg;
+    messagesList.appendChild(li);
+  });
+}
+
+async function sendMessage() {
+  const username = document.getElementById('username').value.trim();
+  const message = document.getElementById('message').value.trim();
+  if (!username || !message) return;
+
+  // Primero traemos el chat actual
+  const res = await fetch(`${SERVER_URL}/get/chat`);
+  const data = await res.json();
+  let chat = data.chat || "";
+
+  // Agregamos el nuevo mensaje
+  chat += `${username}: ${message}\n`;
+
+  // Enviamos el chat actualizado
+  await fetch(`${SERVER_URL}/set/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value: chat })
+  });
+
+  document.getElementById('message').value = '';
+  fetchMessages();
+}
+
+// Refrescar mensajes cada 2 segundos
+setInterval(fetchMessages, 2000);
+fetchMessages();
 </script>
+
 </body>
 </html>
