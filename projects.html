@@ -5,11 +5,22 @@
     <title>My Projects</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #e0f7fa; margin-top: 20px; text-align: center; }
-        .project-list { display: flex; flex-direction: column; align-items: center; gap: 30px; }
-        .project-item { width: 85%; padding: 10px; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-        h2 { margin-bottom: 10px; }
-        iframe { width: 100%; height: 400px; border: 1px solid #ccc; border-radius: 8px; }
-        a { display: block; margin-top: 20px; font-size: 18px; color: blue; text-decoration: underline; }
+        .project-list { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .project-item a {
+            font-size: 20px;
+            color: #0066cc;
+            text-decoration: none;
+            background-color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .project-item a:hover {
+            background-color: #0066cc;
+            color: #ffffff;
+        }
+        a.home { display: block; margin-top: 30px; font-size: 18px; color: blue; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -17,12 +28,12 @@
     <div class="project-list" id="projectList">
         <p>Loading projects...</p>
     </div>
-    <a href="index.html">Back to Home</a>
+    <a class="home" href="index.html">Back to Home</a>
 
     <script>
         async function loadProjects() {
             try {
-                const response = await fetch('projects/list.json'); // Cambié aquí
+                const response = await fetch('projects/list.json');
                 const projects = await response.json();
                 const container = document.getElementById('projectList');
                 container.innerHTML = '';
@@ -31,14 +42,12 @@
                     const wrapper = document.createElement('div');
                     wrapper.className = 'project-item';
 
-                    const title = document.createElement('h2');
-                    title.textContent = project.name;
+                    const link = document.createElement('a');
+                    link.href = 'projects/' + project.project;
+                    link.textContent = project.name;
+                    link.target = "_blank"; // Opcional: abre en nueva pestaña
 
-                    const iframe = document.createElement('iframe');
-                    iframe.src = 'projects/' + project.project; // Cambié aquí
-
-                    wrapper.appendChild(title);
-                    wrapper.appendChild(iframe);
+                    wrapper.appendChild(link);
                     container.appendChild(wrapper);
                 });
             } catch (error) {
