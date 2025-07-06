@@ -2,120 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tic Tac Toe</title>
+    <title>Welcome to Francesco's Place</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-        }
-        h1 {
-            margin-top: 20px;
-        }
-        #board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-gap: 5px;
-            justify-content: center;
-            margin: 20px auto;
-        }
-        .cell {
-            width: 100px;
-            height: 100px;
-            background-color: white;
-            font-size: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid #333;
-        }
-        #status {
-            font-size: 20px;
-            margin-top: 15px;
-        }
-        #restart {
-            margin-top: 10px;
-            padding: 8px 16px;
-            font-size: 16px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; margin-top: 50px; }
+        a { display: block; margin: 10px; font-size: 18px; color: blue; text-decoration: underline; }
     </style>
 </head>
 <body>
-
-<h1>Tic Tac Toe</h1>
-
-<div id="board"></div>
-
-<div id="status">Player X's turn</div>
-<button id="restart">Restart</button>
-
-<script>
-    const board = document.getElementById('board');
-    const statusText = document.getElementById('status');
-    const restartBtn = document.getElementById('restart');
-
-    let cells = Array(9).fill(null);
-    let currentPlayer = 'X';
-    let gameActive = true;
-
-    const winningCombos = [
-        [0,1,2], [3,4,5], [6,7,8],
-        [0,3,6], [1,4,7], [2,5,8],
-        [0,4,8], [2,4,6]
-    ];
-
-    function checkWinner() {
-        for (let combo of winningCombos) {
-            const [a, b, c] = combo;
-            if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
-                gameActive = false;
-                return cells[a];
-            }
-        }
-        if (!cells.includes(null)) {
-            gameActive = false;
-            return 'Draw';
-        }
-        return null;
-    }
-
-    function handleClick(index) {
-        if (!gameActive || cells[index]) return;
-
-        cells[index] = currentPlayer;
-        renderBoard();
-
-        const winner = checkWinner();
-        if (winner) {
-            statusText.textContent = winner === 'Draw' ? "It's a draw!" : `Player ${winner} wins!`;
-        } else {
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-            statusText.textContent = `Player ${currentPlayer}'s turn`;
-        }
-    }
-
-    function renderBoard() {
-        board.innerHTML = '';
-        cells.forEach((cell, i) => {
-            const cellElement = document.createElement('div');
-            cellElement.className = 'cell';
-            cellElement.textContent = cell || '';
-            cellElement.addEventListener('click', () => handleClick(i));
-            board.appendChild(cellElement);
-        });
-    }
-
-    restartBtn.addEventListener('click', () => {
-        cells = Array(9).fill(null);
-        currentPlayer = 'X';
-        gameActive = true;
-        statusText.textContent = `Player ${currentPlayer}'s turn`;
-        renderBoard();
-    });
-
-    renderBoard();
-</script>
-
+    <h1>Welcome to Francesco's Place</h1>
+    <p>Select a page:</p>
+    <a href="about.html">About Me</a>
+    <a href="projects.html">My Projects</a>
+    <a href="contact.html">Contact</a>
 </body>
 </html>
